@@ -17,27 +17,40 @@ class MeetingService(BaseService[Meeting, MeetingCreate, MeetingUpdate]):
         super().__init__(repo, model_name="Meeting")
         self.attendee_repo = attendee_repo
 
-    async def create_meeting_with_recurrence(
-        self, meeting_data: MeetingCreate
+    async def create_meeting(
+        self,
+        meeting_data: MeetingCreate,
+        user_id: int,
+        attendees_data: list[dict] = None,
     ) -> MeetingRetrieve:
-        logger.info(
-            f"Starting create_meeting_with_recurrence \
-                with data: {meeting_data.model_dump()}"
-        )
-        if meeting_data.recurrence_id:
-            recurrence = await self.repo.db.get(
-                MeetingRecurrence, meeting_data.recurrence_id
-            )
-            if not recurrence:
-                logger.warning(
-                    f"Recurrence with ID {meeting_data.recurrence_id} not found"
-                )
-                raise ValidationError(
-                    detail=f"Recurrence with ID {meeting_data.recurrence_id} not found"
-                )
+        logger.info(f"Creating meeting with data: {meeting_data.model_dump()}")
 
-        meeting = await self.repo.create_with_recurrence(meeting_data.model_dump())
-        logger.info(f"Successfully created meeting with ID: {meeting.id}")
+        attendees_data = attendees_data or []
+        creator_attendee = {"user_id": user_id, "is_scheduler": True}
+        attendees_data.append(creator_attendee)
+
+        async with self.repo.db.begin():
+            try:
+                if meeting_data.recurrence_id:
+                    meeting = await self.repo.create_with_recurrence(
+                        meeting_data.model_dump()
+                    )
+                else:
+                    meeting = await self.repo.create(meeting_data.model_dump())
+
+                for attendee_data in attendees_data:
+                    attendee_data["meeting_id"] = meeting.id
+                    await self.attendee_repo.create(attendee_data)
+
+            except Exception as e:
+                logger.error(f"Error creating meeting: {e}")
+                raise ValidationError(detail="Failed to create meeting.")
+
+        logger.info(f"Meeting with ID {meeting.id} created successfully.")
+
+        if meeting_data.recurrence_id:
+            meeting = await self.repo.get_by_id_with_recurrence(meeting.id)
+
         return MeetingRetrieve.model_validate(meeting)
 
     async def get_meetings_by_user_id(
@@ -162,24 +175,6 @@ class MeetingService(BaseService[Meeting, MeetingCreate, MeetingUpdate]):
             f"Successfully created subsequent meeting with ID: {new_meeting.id}"
         )
         return MeetingRetrieve.model_validate(new_meeting)
-
-    async def create_meeting_with_recurrence_and_attendees(
-        self, meeting_data: dict, attendees: list[dict]
-    ):
-        async with self.repo.db.begin():
-            logger.info(
-                f"Creating meeting with recurrence \
-                    and attendees with data: {meeting_data}"
-            )
-            meeting = await self.repo.create_with_recurrence(meeting_data)
-            logger.info(f"Successfully created meeting with ID: {meeting.id}")
-
-            for attendee_data in attendees:
-                logger.info(f"Adding attendee: {attendee_data}")
-                attendee_data["meeting_id"] = meeting.id
-                await self.attendee_repo.create(attendee_data)
-
-            return meeting
 
     async def create_recurring_meetings(
         self, recurrence_id: int, base_meeting: dict, dates: list[datetime]

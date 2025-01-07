@@ -9,8 +9,21 @@ from app.services.meeting_recurrence_service import MeetingRecurrenceService
 from app.services.meeting_service import MeetingService
 from app.services.meeting_task_service import MeetingTaskService
 from app.services.task_service import TaskService
-from fastapi import Depends
+from fastapi import Depends, Request, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+def get_user_metadata(request: Request) -> dict:
+    """Extracts user metadata from request headers."""
+    user_id = request.headers.get("X-User-ID")
+    user_email = request.headers.get("X-User-Email")
+    if not user_id:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": f"User not {user_email or 'authenticated'}"},
+        )
+    return {"id": int(user_id), "email": user_email}
 
 
 def get_meeting_repo(db: AsyncSession = Depends(get_db)) -> MeetingRepository:

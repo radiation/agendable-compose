@@ -30,6 +30,12 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY is not set in the environment variables!")
 
+if os.getenv("TESTING", "false").lower() == "true":
+    logger.remove()
+    logger.add(sink=lambda msg: None, level="WARNING")
+else:
+    logger.add("app.log", level="INFO")
+
 # Register exception handlers
 app.add_exception_handler(NotFoundError, not_found_exception_handler)
 app.add_exception_handler(ValidationError, validation_exception_handler)

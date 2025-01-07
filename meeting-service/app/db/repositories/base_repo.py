@@ -13,19 +13,14 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
         self.db = db
 
-    async def create(self, obj_in: dict) -> ModelType:
-        logger.debug(f"Creating {self.model.__name__} with data: {obj_in}")
-        db_obj = self.model(**obj_in)
-        self.db.add(db_obj)
+    async def create(self, data: dict) -> ModelType:
         try:
-            await self.db.commit()
-            await self.db.refresh(db_obj)
-            logger.debug(
-                f"{self.model.__name__} created successfully with ID: {db_obj.id}"
-            )
-            return db_obj
+            db_obj = self.model(**data)
+            self.db.add(db_obj)
+            await self.db.flush()  # Generate ID without committing
+            return db_obj  # Do not refresh here
         except Exception as e:
-            logger.exception(f"Error creating {self.model.__name__}: {e}")
+            logger.error(f"Error creating {self.model_name}: {str(e)}")
             raise
 
     async def get_by_id(self, id: int) -> ModelType:

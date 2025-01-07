@@ -1,10 +1,10 @@
 import re
 
+from app.core.dependencies import get_user_metadata
 from app.db import get_db
 from app.exceptions import ForbiddenError, ValidationError
 from app.services.meeting_attendee_service import get_meeting_attendee_service
-from app.utils.auth import get_user_metadata
-from fastapi import Request
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -16,11 +16,14 @@ async def extract_meeting_id(path: str) -> int:
     return None
 
 
-async def meeting_permission_middleware(request: Request, call_next):
+async def meeting_permission_middleware(
+    request: Request,
+    call_next: callable,
+    user_metadata: dict = Depends(get_user_metadata),
+) -> callable:
     """Middleware to enforce meeting-specific permissions."""
     if request.method != "POST":
         # Extract user metadata
-        user_metadata = get_user_metadata(request)
         user_id = user_metadata.get("user_id")
         if not user_id:
             raise ValidationError(detail="User ID is missing in request metadata.")

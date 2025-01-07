@@ -76,8 +76,7 @@ class MeetingRepository(BaseRepository[Meeting]):
         logger.debug(f"Creating meeting with recurrence using data: {meeting_data}")
         new_meeting = self.model(**meeting_data)
         self.db.add(new_meeting)
-        await self.db.commit()
-        await self.db.refresh(new_meeting)
+        await self.db.flush()
 
         # Eagerly load the recurrence relationship
         stmt = (
@@ -120,7 +119,7 @@ class MeetingRepository(BaseRepository[Meeting]):
             for start_date in dates
         ]
         self.db.add_all(meetings)
-        await self.db.commit()
+        await self.db.flush()
         logger.debug(
             f"Batch created {len(meetings)} meetings for recurrence ID {recurrence_id}"
         )

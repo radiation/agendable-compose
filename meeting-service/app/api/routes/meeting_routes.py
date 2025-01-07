@@ -1,5 +1,5 @@
 from app.core.decorators import log_execution_time
-from app.core.dependencies import get_meeting_service
+from app.core.dependencies import get_meeting_service, get_user_metadata
 from app.core.logging_config import logger
 from app.exceptions import NotFoundError, ValidationError
 from app.schemas.meeting_schemas import (
@@ -23,13 +23,16 @@ async def get_attendee(request: Request):
 async def create_meeting(
     meeting: MeetingCreate,
     service: MeetingService = Depends(get_meeting_service),
+    user_metadata: dict = Depends(get_user_metadata),
 ) -> MeetingRetrieve:
     logger.info(f"Creating meeting with data: {meeting.model_dump()}")
+
     try:
-        if meeting.recurrence_id:
-            result = await service.create_meeting_with_recurrence(meeting)
-        else:
-            result = await service.create(meeting)
+        result = await service.create_meeting(
+            meeting_data=meeting,
+            user_id=user_metadata["id"],
+            attendees_data=[],
+        )
         logger.info(f"Meeting created successfully with ID: {result.id}")
         return result
     except ValidationError as ve:
@@ -90,7 +93,7 @@ async def update_meeting(
 @log_execution_time
 async def delete_meeting(
     meeting_id: int, service: MeetingService = Depends(get_meeting_service)
-):
+) -> None:
     logger.info(f"Deleting meeting with ID: {meeting_id}")
     success = await service.delete(meeting_id)
     if not success:
@@ -101,7 +104,7 @@ async def delete_meeting(
 
 @router.post("/{meeting_id}/complete/", response_model=MeetingRetrieve)
 @log_execution_time
-async def complete_meeting_route(
+async def complete_meeting(
     meeting_id: int,
     service: MeetingService = Depends(get_meeting_service),
 ) -> MeetingRetrieve:
@@ -139,7 +142,7 @@ async def add_recurrence(
 
 @router.get("/{meeting_id}/next/", response_model=MeetingRetrieve)
 @log_execution_time
-async def next_meeting(
+async def get_next_meeting(
     meeting_id: int,
     service: MeetingService = Depends(get_meeting_service),
 ) -> MeetingRetrieve:

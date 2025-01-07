@@ -1,5 +1,6 @@
 import pytest
 from app.api.routes.meeting_routes import get_attendee
+from app.core.dependencies import get_user_metadata
 from app.db.db import get_db
 from app.db.models import Base
 from app.db.repositories.meeting_attendee_repo import MeetingAttendeeRepository
@@ -14,6 +15,7 @@ from app.services.meeting_service import MeetingService
 from app.services.meeting_task_service import MeetingTaskService
 from app.services.task_service import TaskService
 from httpx import ASGITransport, AsyncClient
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -36,6 +38,18 @@ async def tables(engine):
     yield
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture(autouse=True)
+def configure_loguru():
+    # Remove all existing handlers to reset configuration
+    logger.remove()
+
+    # Add a new handler for concise logs
+    logger.add(
+        sink=lambda msg: None,  # Suppress log output
+        level="WARNING",  # Log only warnings or above
+    )
 
 
 @pytest.fixture(scope="function")
@@ -67,6 +81,20 @@ async def test_client(db_session):
         transport=ASGITransport(app=app), base_url="http://testserver"
     ) as client:
         yield client
+
+
+@pytest.fixture(autouse=True)
+def mock_user_metadata_override():
+    """
+    Automatically overrides the `get_user_metadata` dependency for all tests.
+    """
+
+    def mock_user_metadata():
+        return {"id": 1, "email": "testuser@example.com"}
+
+    app.dependency_overrides[get_user_metadata] = mock_user_metadata
+    yield
+    app.dependency_overrides.pop(get_user_metadata, None)
 
 
 @pytest.fixture

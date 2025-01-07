@@ -1,4 +1,16 @@
 import pytest
+from app.core.dependencies import get_user_metadata
+from app.main import app
+
+
+# Mock function to replace `get_user_metadata`
+def mock_get_user_metadata():
+    return {"id": 1, "email": "testuser@example.com"}
+
+
+# Override the dependency
+app.dependency_overrides[get_user_metadata] = mock_get_user_metadata
+
 
 meeting_data = {
     "title": "Team Meeting",
@@ -38,10 +50,11 @@ async def test_meeting_router_lifecycle(test_client):
     assert meeting["title"] == "Team Meeting"
 
     # Update the meeting we created
-    response = await test_client.post(
-        "/meetings/",
+    response = await test_client.put(
+        f"/meetings/{meeting_id}",
         json=meeting_data,
     )
+    print(response.json())
     meeting_id = response.json()["id"]
     response = await test_client.put(
         f"/meetings/{meeting_id}",
@@ -68,6 +81,10 @@ async def test_meeting_router_lifecycle(test_client):
 
 @pytest.mark.asyncio
 async def test_create_meeting_with_recurrence_id(test_client):
+    test_client.headers.update(
+        {"X-User-ID": "1", "X-User-Email": "testuser@example.com"}
+    )
+
     # Create a meeting recurrence
     meeting_recurrence_data = {
         "title": "Annual Meeting",
