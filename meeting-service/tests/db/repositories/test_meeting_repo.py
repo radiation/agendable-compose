@@ -1,12 +1,13 @@
 import pytest
-from app.db.models import Meeting, Recurrence
-from app.db.repositories import MeetingRepository
+from app.db.models.meeting import Meeting
+from app.db.models.recurrence import Recurrence
+from app.db.repositories.meeting_repo import MeetingRepository
 from tests.factories import MeetingFactory
 
 
 @pytest.mark.asyncio
-async def test_create_meeting(db_session):
-    repo = MeetingRepository(db_session)
+async def test_create_meeting(test_db_session):
+    repo = MeetingRepository(test_db_session)
     meeting_data = MeetingFactory.build()
     created_meeting = await repo.create(meeting_data)
 
@@ -15,8 +16,8 @@ async def test_create_meeting(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_meeting_by_id(db_session):
-    repo = MeetingRepository(db_session)
+async def test_get_meeting_by_id(test_db_session):
+    repo = MeetingRepository(test_db_session)
 
     meeting_data = MeetingFactory.build()
     created_meeting = await repo.create(meeting_data)
@@ -28,8 +29,8 @@ async def test_get_meeting_by_id(db_session):
 
 # TODO: Have this test actually test getting a meeting by user
 @pytest.mark.asyncio
-async def test_get_meeting_by_user(db_session):
-    repo = MeetingRepository(db_session)
+async def test_get_meeting_by_user(test_db_session):
+    repo = MeetingRepository(test_db_session)
 
     meeting_data = MeetingFactory.build()
     created_meeting = await repo.create(meeting_data)
@@ -49,8 +50,8 @@ async def test_get_meeting_by_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_update_meeting(db_session):
-    repo = MeetingRepository(db_session)
+async def test_update_meeting(test_db_session):
+    repo = MeetingRepository(test_db_session)
 
     meeting_data = MeetingFactory.build()
     created_meeting = await repo.create(meeting_data)
@@ -63,8 +64,8 @@ async def test_update_meeting(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_meeting(db_session):
-    repo = MeetingRepository(db_session)
+async def test_delete_meeting(test_db_session):
+    repo = MeetingRepository(test_db_session)
 
     meeting_data = MeetingFactory.build()
     created_meeting = await repo.create(meeting_data)
@@ -75,17 +76,17 @@ async def test_delete_meeting(db_session):
 
 
 @pytest.mark.asyncio
-async def test_relationships(db_session):
-    repo = MeetingRepository(db_session)
+async def test_relationships(test_db_session):
+    repo = MeetingRepository(test_db_session)
 
     recurrence = Recurrence(title="Weekly Recurrence", rrule="FREQ=WEEKLY;INTERVAL=1")
-    db_session.add(recurrence)
-    await db_session.commit()
+    test_db_session.add(recurrence)
+    await test_db_session.commit()
 
     meeting_data = MeetingFactory.build(recurrence_id=recurrence.id)
     created_meeting = await repo.create(meeting_data)
 
-    repo = MeetingRepository(db_session)
+    repo = MeetingRepository(test_db_session)
     result = await repo.get_by_id(created_meeting.id)
 
     assert result is not None

@@ -1,9 +1,13 @@
+"""
+Routes for user management.
+"""
+
 from uuid import UUID
 
 from app.core.decorators import log_execution_time
 from app.core.dependencies import get_user_service
 from app.core.logging_config import logger
-from app.exceptions import NotFoundError, ValidationError
+from app.exceptions import NotFoundError
 from app.schemas import UserCreate, UserRetrieve, UserUpdate
 from app.services import UserService
 from fastapi import APIRouter, Depends
@@ -16,17 +20,11 @@ router = APIRouter()
 async def create_user(
     user: UserCreate, service: UserService = Depends(get_user_service)
 ) -> UserRetrieve:
-    try:
-        logger.info(f"Creating user with data: {user.model_dump()}")
-        result = await service.create(user)
-        logger.info(f"User created successfully with ID: {result.id}")
-        return result
-    except ValidationError as ve:
-        logger.warning(f"Validation error: {ve}")
-        raise
-    except Exception:
-        logger.exception("Unexpected error while creating user")
-        raise ValidationError("An unexpected error occurred. Please try again.")
+    """
+    Create a new user with the provided data.
+    """
+    logger.info(f"Creating user with data: {user.model_dump()}")
+    return await service.create(user)
 
 
 @router.get("/", response_model=list[UserRetrieve])
@@ -34,6 +32,9 @@ async def create_user(
 async def get_users(
     service: UserService = Depends(get_user_service),
 ) -> list[UserRetrieve]:
+    """
+    Fetch all users.
+    """
     logger.info("Fetching all users.")
     result = await service.get_all()
     logger.info(f"Retrieved {len(result)} users.")
@@ -45,6 +46,9 @@ async def get_users(
 async def get_user(
     user_id: UUID, service: UserService = Depends(get_user_service)
 ) -> UserRetrieve:
+    """
+    Fetch a user by ID.
+    """
     logger.info(f"Fetching user with ID: {user_id}")
     result = await service.get_by_id(user_id)
     if result is None:
@@ -59,6 +63,9 @@ async def get_user(
 async def get_user_by_email(
     email: str, service: UserService = Depends(get_user_service)
 ) -> UserRetrieve:
+    """
+    Fetch a user by email.
+    """
     logger.info(f"Fetching user with email: {email}")
     result = await service.get_by_field("email", email)
     if result is None:
@@ -75,6 +82,9 @@ async def update_user(
     user: UserUpdate,
     service: UserService = Depends(get_user_service),
 ) -> UserRetrieve:
+    """
+    Update a user with the provided data.
+    """
     logger.info(f"Updating user with ID: {user_id} with data: {user.model_dump()}")
     result = await service.update(user_id, user)
     if result is None:
@@ -87,6 +97,9 @@ async def update_user(
 @router.delete("/{user_id}", status_code=204)
 @log_execution_time
 async def delete_user(user_id: UUID, service: UserService = Depends(get_user_service)):
+    """
+    Delete a user by ID.
+    """
     logger.info(f"Deleting user with ID: {user_id}")
     success = await service.delete(user_id)
     if not success:

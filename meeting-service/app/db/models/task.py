@@ -1,11 +1,20 @@
+"""
+Task model
+"""
+
 import sqlalchemy.sql.functions as func
 from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String
 from sqlalchemy.orm import relationship
 
-from . import Base, meeting_tasks
+from . import Base
+from .relationships import meeting_tasks
 
 
-class Task(Base):
+class Task(Base):  # pylint: disable=too-few-public-methods
+    """
+    Task model
+    """
+
     __tablename__ = "tasks"
     __table_args__ = (
         Index("ix_task_assignee_id", "assignee_id"),
