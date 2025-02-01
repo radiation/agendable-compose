@@ -36,7 +36,7 @@ class MeetingFactory(BaseFactory):
 
     id = factory.Sequence(lambda n: n + 1)
     title = factory.Faker("sentence", nb_words=3)
-    start_date = factory.LazyFunction(datetime.now())
+    start_date = factory.LazyFunction(staticmethod(datetime.now))
     duration = factory.Faker("random_int", min=15, max=120)
     location = factory.Faker("address")
     notes = factory.Faker("text")
@@ -50,7 +50,7 @@ class MeetingCreateFactory(factory.Factory):
         model = MeetingCreate
 
     title = factory.Faker("sentence", nb_words=3)
-    start_date = factory.LazyFunction(datetime.now())
+    start_date = factory.LazyFunction(staticmethod(datetime.now))
     duration = factory.Faker("random_int", min=15, max=120)
 
 
