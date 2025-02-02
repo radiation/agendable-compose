@@ -2,6 +2,8 @@
 Routes for meeting recurrence management.
 """
 
+from fastapi import APIRouter, Depends
+
 from app.core.decorators import log_execution_time
 from app.core.dependencies import get_recurrence_service
 from app.core.logging_config import logger
@@ -12,8 +14,7 @@ from app.schemas import (
     RecurrenceRetrieve,
     RecurrenceUpdate,
 )
-from app.services import RecurrenceService
-from fastapi import APIRouter, Depends
+from app.services.recurrence_service import RecurrenceService
 
 router = APIRouter()
 

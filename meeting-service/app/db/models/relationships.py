@@ -3,9 +3,10 @@ This module contains the SQLAlchemy relationship tables for the many-to-many
 relationships between meetings and tasks, and meetings and users.
 """
 
-from app.db.models.base import Base
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, Table, text
 from sqlalchemy.dialects.postgresql import UUID
+
+from app.db.models.base import Base
 
 meeting_tasks = Table(
     "meeting_tasks",

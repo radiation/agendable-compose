@@ -4,13 +4,14 @@ Routes for user management.
 
 from uuid import UUID
 
+from fastapi import APIRouter, Depends
+
 from app.core.decorators import log_execution_time
 from app.core.dependencies import get_user_service
 from app.core.logging_config import logger
 from app.exceptions import NotFoundError
 from app.schemas import UserCreate, UserRetrieve, UserUpdate
-from app.services import UserService
-from fastapi import APIRouter, Depends
+from app.services.user_service import UserService
 
 router = APIRouter()
 

@@ -1,7 +1,8 @@
-import uuid
 from datetime import datetime
+import uuid
 
 import factory
+
 from app.db.models.meeting import Meeting
 from app.db.models.recurrence import Recurrence
 from app.db.models.task import Task

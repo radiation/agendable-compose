@@ -1,7 +1,10 @@
 import asyncio
-import os
 from builtins import anext
 from contextlib import asynccontextmanager
+import os
+
+from dotenv import load_dotenv
+from fastapi import FastAPI
 
 from app.api.routes import meeting_routes, recurrence_routes, task_routes, user_routes
 from app.core.dependencies import (
@@ -19,8 +22,6 @@ from app.exceptions import (
     validation_exception_handler,
 )
 from app.services.redis_subscriber import RedisSubscriber
-from dotenv import load_dotenv
-from fastapi import FastAPI
 
 load_dotenv()
 
@@ -32,17 +33,17 @@ async def test_redis_connection(redis_client):
         pong = await redis_client.ping()
         if pong:
             logger.info("Redis connection is successful.")
-    except Exception as e:
-        logger.warning(f"Redis connection failed: {e}")
+    except (ConnectionError, TimeoutError) as exc:
+        logger.error(f"Redis connection failed: {exc}")
+        raise exc
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(fastapi_app: FastAPI):
     logger.info("Lifespan startup")
 
-    # Resolve database session manually
-    db_session_generator = get_db()  # This is an async generator
-    db_session = await anext(db_session_generator)  # Get the first yielded value
+    db_session_generator = get_db()
+    db_session = await anext(db_session_generator)
 
     redis_client = get_redis_client()
 
@@ -59,13 +60,13 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    app.state.redis_subscriber_task.cancel()
+    fastapi_app.state.redis_subscriber_task.cancel()
     try:
-        await app.state.redis_subscriber_task
+        await fastapi_app.state.redis_subscriber_task
     except asyncio.CancelledError:
         logger.warning("Redis subscriber task cancelled.")
 
-    await db_session_generator.aclose()  # Close the async generator
+    await db_session_generator.aclose()
     logger.info("Lifespan shutdown complete.")
 
 

@@ -2,13 +2,14 @@
 Routes for task management.
 """
 
+from fastapi import APIRouter, Depends
+
 from app.core.decorators import log_execution_time
 from app.core.dependencies import get_task_service
 from app.core.logging_config import logger
 from app.exceptions import NotFoundError
 from app.schemas import TaskCreate, TaskRetrieve, TaskUpdate
-from app.services import TaskService
-from fastapi import APIRouter, Depends
+from app.services.task_service import TaskService
 
 router = APIRouter()
 

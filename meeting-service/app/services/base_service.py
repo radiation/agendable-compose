@@ -2,11 +2,12 @@ import json
 from typing import Generic, TypeVar, Union
 from uuid import UUID
 
+from pydantic import BaseModel
+
 from app.core.logging_config import logger
 from app.core.redis_client import RedisClient
 from app.db.repositories import BaseRepository
 from app.exceptions import NotFoundError, ValidationError
-from pydantic import BaseModel
 
 ModelType = TypeVar("ModelType")  # pylint: disable=invalid-name
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)  # pylint: disable=invalid-name

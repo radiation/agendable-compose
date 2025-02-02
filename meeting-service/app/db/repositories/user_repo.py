@@ -1,8 +1,9 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from app.core.logging_config import logger
 from app.db.models.user import User
 from app.db.repositories.base_repo import BaseRepository
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 
 class UserRepository(BaseRepository[User]):

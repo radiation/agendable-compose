@@ -2,7 +2,6 @@
 Meeting model
 """
 
-import sqlalchemy.sql.functions as func
 from sqlalchemy import (
     Boolean,
     Column,
@@ -14,6 +13,7 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.orm import relationship
+import sqlalchemy.sql.functions as func
 
 from . import Base
 from .relationships import meeting_tasks, meeting_users

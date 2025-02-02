@@ -1,6 +1,7 @@
 import pytest
-from app.db.repositories.recurrence_repo import RecurrenceRepository
 from tests.factories import RecurrenceFactory
+
+from app.db.repositories.recurrence_repo import RecurrenceRepository
 
 
 @pytest.mark.asyncio

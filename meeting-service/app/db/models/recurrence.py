@@ -4,11 +4,12 @@ Recurrence model
 
 from datetime import datetime, timedelta
 
-import sqlalchemy.sql.functions as func
-from app.core.logging_config import logger
 from dateutil.rrule import rrulestr
 from sqlalchemy import Column, DateTime, Index, Integer, String
 from sqlalchemy.orm import relationship
+import sqlalchemy.sql.functions as func
+
+from app.core.logging_config import logger
 
 from . import Base
 

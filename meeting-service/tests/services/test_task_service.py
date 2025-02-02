@@ -1,7 +1,8 @@
 import pytest
+from tests.factories import TaskCreateFactory
+
 from app.exceptions import NotFoundError
 from app.schemas import TaskUpdate
-from tests.factories import TaskCreateFactory
 
 
 @pytest.mark.asyncio

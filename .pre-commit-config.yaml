@@ -18,9 +18,17 @@ repos:
     hooks:
     -   id: isort
 
+# Disable pylint checks:
+# C0103 (invalid-name)
+# C0114 (missing-module-docstring)
+# C0115 (missing-class-docstring)
+# C0116 (missing-function-docstring)
+# R0903 (too-few-public-methods)
+# W0511 (fixme)
 -   repo: https://github.com/PyCQA/pylint
     rev: v3.0.3
     hooks:
     -   id: pylint
         language: system
-        args: ["--disable=C0114,C0115,C0116,R0903,W0511"]
+        args: ["--disable=C0103,C0114,C0115,C0116,R0903,W0511"]
+        exclude: "^(.*-service)/alembic/.*"

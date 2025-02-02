@@ -5,9 +5,10 @@ Base repository class for CRUD operations on SQLAlchemy models
 from typing import Any, Generic, Type, TypeVar, Union
 from uuid import UUID
 
-from app.core.logging_config import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+from app.core.logging_config import logger
 
 ModelType = TypeVar("ModelType")  # pylint: disable=invalid-name
 

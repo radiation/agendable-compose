@@ -4,7 +4,11 @@ Fixtures for testing the FastAPI application
 
 from unittest.mock import AsyncMock
 
+from httpx import ASGITransport, AsyncClient
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
 from app.core.dependencies import (
     get_meeting_service,
     get_recurrence_service,
@@ -18,10 +22,10 @@ from app.db.repositories.recurrence_repo import RecurrenceRepository
 from app.db.repositories.task_repo import TaskRepository
 from app.db.repositories.user_repo import UserRepository
 from app.main import app
-from app.services import MeetingService, RecurrenceService, TaskService, UserService
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from app.services.meeting_service import MeetingService
+from app.services.recurrence_service import RecurrenceService
+from app.services.task_service import TaskService
+from app.services.user_service import UserService
 
 # Use an in-memory SQLite database for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

@@ -1,8 +1,9 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from app.core.logging_config import logger
 from app.db.models.recurrence import Recurrence
 from app.db.repositories import BaseRepository
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 
 class RecurrenceRepository(BaseRepository[Recurrence]):

@@ -1,9 +1,10 @@
 import uuid
 
 import pytest
+from tests.factories import UserFactory
+
 from app.db.models.user import User
 from app.db.repositories.user_repo import UserRepository
-from tests.factories import UserFactory
 
 
 @pytest.mark.asyncio

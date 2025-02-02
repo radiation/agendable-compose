@@ -1,11 +1,12 @@
 from datetime import datetime
 
+from dateutil.rrule import rrulestr
+
 from app.core.logging_config import logger
 from app.db.models.recurrence import Recurrence
 from app.db.repositories.recurrence_repo import RecurrenceRepository
 from app.schemas import RecurrenceCreate, RecurrenceUpdate
 from app.services import BaseService
-from dateutil.rrule import rrulestr
 
 
 class RecurrenceService(BaseService[Recurrence, RecurrenceCreate, RecurrenceUpdate]):
