@@ -1,3 +1,7 @@
+"""
+Logging configuration for the application.
+"""
+
 import os
 import sys
 

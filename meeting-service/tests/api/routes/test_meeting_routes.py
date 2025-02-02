@@ -79,7 +79,7 @@ async def test_create_meeting_with_recurrence_id(test_client):
 
 
 @pytest.mark.asyncio
-async def test_complete_meeting(test_client, mock_redis_client):
+async def test_complete_meeting(test_client, test_mock_redis):
     # Generate meeting data
     meeting_data = MeetingFactory.as_dict()
 
@@ -119,7 +119,7 @@ async def test_complete_meeting(test_client, mock_redis_client):
     response = await test_client.post(f"/meetings/{meeting_id}/complete/")
     assert response.status_code == 200
 
-    mock_redis_client.publish.assert_awaited_with(
+    test_mock_redis.publish.assert_awaited_with(
         "meeting-events",
         json.dumps(
             {

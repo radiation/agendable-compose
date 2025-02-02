@@ -16,3 +16,4 @@ async-asgi-testclient
 asyncpg
 loguru
 redis
+pylint

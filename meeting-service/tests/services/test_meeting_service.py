@@ -1,7 +1,8 @@
 import pytest
+from tests.factories import MeetingCreateFactory
+
 from app.exceptions import NotFoundError
 from app.schemas import MeetingUpdate
-from tests.factories import MeetingCreateFactory
 
 
 @pytest.mark.asyncio

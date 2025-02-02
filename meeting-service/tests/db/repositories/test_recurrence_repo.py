@@ -1,11 +1,12 @@
 import pytest
-from app.db.repositories import RecurrenceRepository
 from tests.factories import RecurrenceFactory
+
+from app.db.repositories.recurrence_repo import RecurrenceRepository
 
 
 @pytest.mark.asyncio
-async def test_create_recurrence(db_session):
-    repo = RecurrenceRepository(db_session)
+async def test_create_recurrence(test_db_session):
+    repo = RecurrenceRepository(test_db_session)
 
     recurrence_factory = RecurrenceFactory.build()
     created_recurrence = await repo.create(recurrence_factory)
@@ -14,8 +15,8 @@ async def test_create_recurrence(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_recurrence(db_session):
-    repo = RecurrenceRepository(db_session)
+async def test_get_recurrence(test_db_session):
+    repo = RecurrenceRepository(test_db_session)
 
     recurrence_factory = RecurrenceFactory.build()
     created_recurrence = await repo.create(recurrence_factory)
@@ -26,8 +27,8 @@ async def test_get_recurrence(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_recurrence(db_session):
-    repo = RecurrenceRepository(db_session)
+async def test_delete_recurrence(test_db_session):
+    repo = RecurrenceRepository(test_db_session)
 
     recurrence_factory = RecurrenceFactory.build()
     created_recurrence = await repo.create(recurrence_factory)

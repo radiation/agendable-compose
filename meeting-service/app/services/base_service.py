@@ -2,24 +2,20 @@ import json
 from typing import Generic, TypeVar, Union
 from uuid import UUID
 
+from pydantic import BaseModel
+
 from app.core.logging_config import logger
 from app.core.redis_client import RedisClient
 from app.db.repositories import BaseRepository
-from app.exceptions import NotFoundError
-from pydantic import BaseModel
+from app.exceptions import NotFoundError, ValidationError
 
-ModelType = TypeVar("ModelType")
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+ModelType = TypeVar("ModelType")  # pylint: disable=invalid-name
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)  # pylint: disable=invalid-name
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)  # pylint: disable=invalid-name
 
 
 class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(
-        self,
-        repo: BaseRepository[ModelType],
-        redis_client: RedisClient,
-        model_name: str,
-    ):
+    def __init__(self, repo: BaseRepository[ModelType], redis_client: RedisClient):
         self.repo = repo
         self.model_name = self.repo.model.__name__
         self.redis_client = redis_client
@@ -39,18 +35,34 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await self.redis_client.publish(channel, json.dumps(event, default=str))
 
     async def create(self, create_data: CreateSchemaType) -> ModelType:
+        """
+        Creates a new database record.
+        """
         logger.info(f"Creating {self.model_name} with data: {create_data.model_dump()}")
-        model_instance = self.repo.model(**create_data.model_dump())
-        result = await self.repo.create(model_instance)
-        logger.info(f"{self.model_name} created successfully with ID: {result.id}")
-        return result
+        try:
+            model_instance = self.repo.model(**create_data.model_dump())
+            result = await self.repo.create(model_instance)
+            logger.info(f"{self.model_name} created successfully with ID: {result.id}")
+            return result
+        except ValidationError as ve:
+            logger.warning(f"Validation error: {ve}")
+            raise
+        except Exception as exc:
+            logger.exception(f"Unexpected error while creating {self.model_name}:")
+            raise ValidationError(
+                detail="An unexpected error occurred. Please try again."
+            ) from exc
 
-    async def get_by_id(self, id: Union[UUID, int]) -> ModelType:
-        logger.info(f"Fetching {self.model_name} with ID: {id} (type: {type(id)})")
-        entity = await self.repo.get_by_id(id)
+    async def get_by_id(self, object_id: Union[UUID, int]) -> ModelType:
+        logger.info(
+            f"Fetching {self.model_name} with ID: {object_id} (type: {type(object_id)})"
+        )
+        entity = await self.repo.get_by_id(object_id)
         if not entity:
-            logger.warning(f"{self.model_name} with ID {id} not found")
-            raise NotFoundError(detail=f"{self.model_name} with ID {id} not found")
+            logger.warning(f"{self.model_name} with ID {object_id} not found")
+            raise NotFoundError(
+                detail=f"{self.model_name} with ID {object_id} not found"
+            )
         logger.info(f"{self.model_name} retrieved: {entity}")
         return entity
 
@@ -70,32 +82,38 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return result
 
     async def update(
-        self, id: Union[UUID, int], update_data: UpdateSchemaType
+        self, object_id: Union[UUID, int], update_data: UpdateSchemaType
     ) -> ModelType:
         logger.info(
             f"Updating {self.model_name} with ID: \
-                {id} and data: {update_data.model_dump()}"
+                {object_id} and data: {update_data.model_dump()}"
         )
-        entity = await self.repo.get_by_id(id)
+        entity = await self.repo.get_by_id(object_id)
         if not entity:
-            logger.warning(f"{self.model_name} with ID {id} not found")
-            raise NotFoundError(detail=f"{self.model_name} with ID {id} not found")
+            logger.warning(f"{self.model_name} with ID {object_id} not found")
+            raise NotFoundError(
+                detail=f"{self.model_name} with ID {object_id} not found"
+            )
         update_dict = update_data.model_dump(exclude_unset=True)
         for key, value in update_dict.items():
             setattr(entity, key, value)
         updated_entity = await self.repo.update(entity)
-        logger.info(f"{self.model_name} with ID {id} updated successfully")
+        logger.info(f"{self.model_name} with ID {object_id} updated successfully")
         return updated_entity
 
-    async def delete(self, id: Union[UUID, int]) -> bool:
-        logger.info(f"Deleting {self.model_name} with ID: {id} (type: {type(id)})")
-        entity = await self.repo.get_by_id(id)
+    async def delete(self, object_id: Union[UUID, int]) -> bool:
+        logger.info(
+            f"Deleting {self.model_name} with ID: {object_id} (type: {type(object_id)})"
+        )
+        entity = await self.repo.get_by_id(object_id)
         if not entity:
-            logger.warning(f"{self.model_name} with ID {id} not found")
-            raise NotFoundError(detail=f"{self.model_name} with ID {id} not found")
-        success = await self.repo.delete(id)
+            logger.warning(f"{self.model_name} with ID {object_id} not found")
+            raise NotFoundError(
+                detail=f"{self.model_name} with ID {object_id} not found"
+            )
+        success = await self.repo.delete(object_id)
         if success:
-            logger.info(f"{self.model_name} with ID {id} deleted successfully")
+            logger.info(f"{self.model_name} with ID {object_id} deleted successfully")
         else:
-            logger.error(f"Failed to delete {self.model_name} with ID {id}")
+            logger.error(f"Failed to delete {self.model_name} with ID {object_id}")
         return success

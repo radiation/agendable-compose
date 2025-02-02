@@ -1,12 +1,17 @@
-import time
+"""
+App decorators.
+"""
+
 from functools import wraps
+import time
 
 from loguru import logger
 
 
-# Utility function to log execution time
 def log_execution_time(func):
-    @wraps(func)  # This preserves the original function's signature
+    """Decorator to log the execution time of a function."""
+
+    @wraps(func)
     async def wrapper(*args, **kwargs):
         start_time = time.time()
         result = await func(*args, **kwargs)

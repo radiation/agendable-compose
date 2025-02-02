@@ -1,7 +1,8 @@
 import pytest
+from tests.factories import UserCreateFactory
+
 from app.exceptions import NotFoundError
 from app.schemas import UserUpdate
-from tests.factories import UserCreateFactory
 
 
 @pytest.mark.asyncio

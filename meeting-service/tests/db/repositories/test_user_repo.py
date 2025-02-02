@@ -1,14 +1,16 @@
 import uuid
 
 import pytest
-from app.db.models import User
-from app.db.repositories import UserRepository
 from tests.factories import UserFactory
+
+from app.db.models.user import User
+from app.db.repositories.user_repo import UserRepository
 
 
 @pytest.mark.asyncio
-async def test_create_user(db_session):
-    repo = UserRepository(db_session)
+async def test_create_user(test_db_session):
+    """Test creating a user."""
+    repo = UserRepository(test_db_session)
 
     user_factory = UserFactory.build()
     created_user = await repo.create(user_factory)
@@ -19,8 +21,9 @@ async def test_create_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_id(db_session):
-    repo = UserRepository(db_session)
+async def test_get_user_by_id(test_db_session):
+    """Test getting a user by ID."""
+    repo = UserRepository(test_db_session)
 
     user_factory = UserFactory.build()
     created_user = await repo.create(user_factory)
@@ -32,8 +35,9 @@ async def test_get_user_by_id(db_session):
 
 
 @pytest.mark.asyncio
-async def test_update_user(db_session):
-    repo = UserRepository(db_session)
+async def test_update_user(test_db_session):
+    """Test updating a user."""
+    repo = UserRepository(test_db_session)
 
     user_factory = UserFactory.build()
     created_user = await repo.create(user_factory)
@@ -46,8 +50,9 @@ async def test_update_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_user(db_session):
-    repo = UserRepository(db_session)
+async def test_delete_user(test_db_session):
+    """Test deleting a user."""
+    repo = UserRepository(test_db_session)
 
     user_factory = UserFactory.build()
     created_user = await repo.create(user_factory)
@@ -58,8 +63,9 @@ async def test_delete_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_all_users(db_session):
-    repo = UserRepository(db_session)
+async def test_get_all_users(test_db_session):
+    """Test getting all users."""
+    repo = UserRepository(test_db_session)
 
     user1 = User(
         id=uuid.uuid4(), email="test1@example.com", first_name="First", last_name="User"
@@ -71,8 +77,8 @@ async def test_get_all_users(db_session):
         last_name="User",
     )
 
-    db_session.add_all([user1, user2])
-    await db_session.commit()
+    test_db_session.add_all([user1, user2])
+    await test_db_session.commit()
 
     users = await repo.get_all()
     assert len(users) == 2

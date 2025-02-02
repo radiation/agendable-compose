@@ -1,4 +1,7 @@
-import sqlalchemy.sql.functions as func
+"""
+Meeting model
+"""
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -10,11 +13,17 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.orm import relationship
+import sqlalchemy.sql.functions as func
 
-from . import Base, meeting_tasks, meeting_users
+from . import Base
+from .relationships import meeting_tasks, meeting_users
 
 
-class Meeting(Base):
+class Meeting(Base):  # pylint: disable=too-few-public-methods
+    """
+    Meeting model
+    """
+
     __tablename__ = "meetings"
     __table_args__ = (
         Index("ix_recurrence_id", "recurrence_id"),
@@ -42,8 +51,8 @@ class Meeting(Base):
 
 @event.listens_for(Meeting, "before_insert")
 @event.listens_for(Meeting, "before_update")
-def receive_before_save(mapper, connection, target: Meeting):
-    # Set the title based on recurrence if the title is empty
+def receive_before_save(mapper, connection, target: Meeting):  # pylint: disable=unused-argument
+    """Set the title based on recurrence if the title is empty"""
     if not target.title and target.recurrence:
         target.title = (
             f"{target.recurrence.title} on {target.start_date.strftime('%Y-%m-%d')}"

@@ -1,11 +1,12 @@
 import pytest
-from app.db.repositories import TaskRepository
 from tests.factories import TaskFactory
+
+from app.db.repositories.task_repo import TaskRepository
 
 
 @pytest.mark.asyncio
-async def test_create_task(db_session):
-    repo = TaskRepository(db_session)
+async def test_create_task(test_db_session):
+    repo = TaskRepository(test_db_session)
 
     task_factory = TaskFactory.build()
     created_task = await repo.create(task_factory)
@@ -14,8 +15,8 @@ async def test_create_task(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_task_by_id(db_session):
-    repo = TaskRepository(db_session)
+async def test_get_task_by_id(test_db_session):
+    repo = TaskRepository(test_db_session)
 
     task_factory = TaskFactory.build()
     created_task = await repo.create(task_factory)
@@ -25,8 +26,8 @@ async def test_get_task_by_id(db_session):
 
 
 @pytest.mark.asyncio
-async def test_update_task(db_session):
-    repo = TaskRepository(db_session)
+async def test_update_task(test_db_session):
+    repo = TaskRepository(test_db_session)
 
     task_factory = TaskFactory.build()
     created_task = await repo.create(task_factory)
@@ -38,8 +39,8 @@ async def test_update_task(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_task(db_session):
-    repo = TaskRepository(db_session)
+async def test_delete_task(test_db_session):
+    repo = TaskRepository(test_db_session)
 
     task_factory = TaskFactory.build()
     created_task = await repo.create(task_factory)
@@ -50,14 +51,14 @@ async def test_delete_task(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_all_tasks(db_session):
-    repo = TaskRepository(db_session)
+async def test_get_all_tasks(test_db_session):
+    repo = TaskRepository(test_db_session)
 
     task1 = TaskFactory.build()
     task2 = TaskFactory.build()
 
-    db_session.add_all([task1, task2])
-    await db_session.commit()
+    test_db_session.add_all([task1, task2])
+    await test_db_session.commit()
 
     tasks = await repo.get_all()
     assert len(tasks) == 2

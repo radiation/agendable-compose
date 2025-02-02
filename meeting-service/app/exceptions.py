@@ -25,29 +25,29 @@ class ForbiddenError(Exception):
 
 
 # Exception Handlers
-async def forbidden_exception_handler(request: Request, exc: ForbiddenError):
+async def forbidden_exception_handler(_request: Request, exc: ForbiddenError):
     return JSONResponse(
         status_code=403,
         content={"detail": exc.detail},
     )
 
 
-async def not_found_exception_handler(request: Request, exc: NotFoundError):
+async def not_found_exception_handler(_request: Request, exc: NotFoundError):
     return JSONResponse(
         status_code=404,
         content={"detail": exc.detail},
     )
 
 
-async def validation_exception_handler(request: Request, exc: ValidationError):
+async def validation_exception_handler(_request: Request, exc: ValidationError):
     return JSONResponse(
         status_code=400,
         content={"detail": exc.detail},
     )
 
 
-async def generic_exception_handler(request: Request, exc: Exception):
+async def generic_exception_handler(_request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
-        content={"detail": "An unexpected error occurred"},
+        content={"detail": str(exc) or "An unexpected error occurred"},
     )

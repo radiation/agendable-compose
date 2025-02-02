@@ -1,7 +1,8 @@
 import pytest
+from tests.factories import RecurrenceCreateFactory
+
 from app.exceptions import NotFoundError
 from app.schemas import RecurrenceUpdate
-from tests.factories import RecurrenceCreateFactory
 
 
 @pytest.mark.asyncio
